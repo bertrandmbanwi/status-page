@@ -5,9 +5,9 @@
 name: Build and deploy Python project to Azure Function App - dgw-statuspage-tst-2
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 env:
