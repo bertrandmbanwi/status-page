@@ -1,0 +1,38 @@
+name: Grafana Checks and Create Components and Metrics
+
+on:
+  push:
+    branches:
+      - feature/Dev_Update
+    paths:
+      - 'combined_script.py'  # Replace with the actual filename if it's different
+  workflow_dispatch: # This trigger allows manual runs from the GitHub UI
+
+jobs:
+  execute-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        ref: feature/Dev_Update # Since you want to run on this branch specifically
+        token: ${{ secrets.STATUSPAGEACCESS_TOKEN }}  # Use your PAT here
+
+    - name: Clean workspace
+      run: git clean -ffdx && git reset --hard
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install dependencies
+      run: pip3 install requests
+
+    - name: Execute combined script
+      run: python3 combined_script.py  # Replace with the actual filename if it's different
+      env:
+        SYNTHETIC_MONITORING_ACCESS: ${{ secrets.SYNTHETIC_MONITORING_ACCESS }}
+        SUBSCRIPTION_KEY: ${{ secrets.SUBSCRIPTION_KEY }}
+        STATUS_PAGE_2_API_KEY: ${{ secrets.STATUS_PAGE_2_API_KEY }}

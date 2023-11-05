@@ -1,0 +1,41 @@
+name: Monitoring All Workflow
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Uncomment to run every 5 minutes automatically
+  workflow_dispatch:  # Allows you to manually trigger the workflow
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3  # Updated to v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3  # Updated to v3
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run monitor script
+        run: python monitor_all.py
+        env:
+          STATUS_PAGE_2_API_KEY: ${{ secrets.STATUS_PAGE_2_API_KEY }}
+          GRAFANA_API_KEY: ${{ secrets.GRAFANA_API_KEY }}
+
+    #   - name: Commit and Push checks_config.json
+    #     run: |
+    #       git config --global user.name 'github-actions[bot]'
+    #       git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+    #       git pull --rebase
+    #       git add metrics_and_components_ids.json
+    #       git commit -m "Update metrics and component IDs" -a || echo "No changes to commit"
+    #       git push
+    #     env:
+    #       GITHUB_TOKEN:
