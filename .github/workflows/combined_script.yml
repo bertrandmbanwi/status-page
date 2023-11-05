@@ -16,7 +16,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        ref: feature/Dev_Update # Since you want to run on this branch specifically
+        ref: main # Since you want to run on this branch specifically
         token: ${{ secrets.STATUSPAGEACCESS_TOKEN }}  # Use your PAT here
 
     - name: Clean workspace
