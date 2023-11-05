@@ -41,6 +41,8 @@ try:
         exit(1)
 except requests.exceptions.RequestException as e:
     print(f"Error during API request: {e}")
+    if e.response:
+        print(f"Response Content: {e.response.content}")
     exit(1)
 
 grafana_headers['Authorization'] = f'Bearer {access_token}'
