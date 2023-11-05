@@ -2,14 +2,17 @@ import requests
 import os
 import json
 import subprocess
+import logging
 
-# ======== GRAFANA ========
-
-SYNTHETIC_MONITORING_ACCESS = os.environ['SYNTHETIC_MONITORING_ACCESS']
-SUBSCRIPTION_KEY = os.environ['SUBSCRIPTION_KEY']
-STACK_ID = 760814
-METRICS_INSTANCE_ID = 1229478
-LOGS_INSTANCE_ID = 713814
+try:
+    SYNTHETIC_MONITORING_ACCESS = os.environ['SYNTHETIC_MONITORING_ACCESS']
+    SUBSCRIPTION_KEY = os.environ['SUBSCRIPTION_KEY']
+    STACK_ID = 760814
+    METRICS_INSTANCE_ID = 1229478
+    LOGS_INSTANCE_ID = 713814
+except KeyError as e:
+    print(f"Environment variable {e} not found.")
+    exit(1)
 
 GRAFANA_URL = 'https://synthetic-monitoring-api-us-central2.grafana.net'
 TOKEN_ENDPOINT = '/api/v1/register/install'
@@ -24,15 +27,20 @@ payload = {
     'logsInstanceId': LOGS_INSTANCE_ID
 }
 
-response = requests.post(f'{GRAFANA_URL}{TOKEN_ENDPOINT}', headers=grafana_headers, json=payload)
-response_data = response.json()
+try:
+    response = requests.post(f'{GRAFANA_URL}{TOKEN_ENDPOINT}', headers=grafana_headers, json=payload)
+    response.raise_for_status()
+    response_data = response.json()
 
-if response.status_code == 200 and 'accessToken' in response_data:
-    access_token = response_data['accessToken']
-    tenant_id = response_data['tenantInfo']['id']
-    print(f'Successfully obtained tenant ID: {tenant_id}')
-else:
-    print(f'Failed to obtain access token: {response_data}')
+    if 'accessToken' in response_data:
+        access_token = response_data['accessToken']
+        tenant_id = response_data['tenantInfo']['id']
+        print(f'Successfully obtained tenant ID: {tenant_id}')
+    else:
+        print(f'Failed to obtain access token: {response_data}')
+        exit(1)
+except requests.exceptions.RequestException as e:
+    print(f"Error during API request: {e}")
     exit(1)
 
 grafana_headers['Authorization'] = f'Bearer {access_token}'
@@ -169,13 +177,17 @@ def create_metric(base_url, headers, metric_name, metrics_provider_id):
 # ... (Previous parts of the script)
 
 def create_statuspage_items(job_labels, headers, base_url):
-    metric_provider_id = setup_self_metric_provider(base_url, headers)
-    created_components_metrics = []
-    for label in job_labels:
-        component_id = create_component(base_url, headers, label)
-        metric_id = create_metric(base_url, headers, f"{label} Metric", metric_provider_id)
-        created_components_metrics.append((label, component_id, metric_id))
-    return created_components_metrics
+    try:
+        metric_provider_id = setup_self_metric_provider(base_url, headers)
+        created_components_metrics = []
+        for label in job_labels:
+            component_id = create_component(base_url, headers, label)
+            metric_id = create_metric(base_url, headers, f"{label} Metric", metric_provider_id)
+            created_components_metrics.append((label, component_id, metric_id))
+        return created_components_metrics
+    except Exception as e:
+        print(f"Error creating Statuspage items: {e}")
+        exit(1)
 
 # ====================== GIT FUNCTIONS ======================
 
@@ -215,54 +227,54 @@ def git_push(file_path, commit_message, branch_name, user_name, user_email):
 # ====================== MAIN EXECUTION ======================
 
 def main():
-    checks_data = [
-        {
-            'url': 'https://digital-marketplace-demo-app.azure-api.net/foodinfec-1/foodinfec-1?state=CA',
-            'job': 'Food Infection API - CA',
-        },
-        {
-            'url': 'https://digital-marketplace-demo-app.azure-api.net/tusd/upload',
-            'job': 'Tusd API',
-        }
-        # ... (Any additional checks_data items you might have)
-    ]
+    try:
+        checks_data = [
+            {
+                'url': 'https://digital-marketplace-demo-app.azure-api.net/foodinfec-1/foodinfec-1?state=CA',
+                'job': 'Food Infection API - CA',
+            },
+            {
+                'url': 'https://digital-marketplace-demo-app.azure-api.net/tusd/upload',
+                'job': 'Tusd API',
+            }
+            # ... (Any additional checks_data items you might have)
+        ]
     
-    print("Creating checks in Grafana...")
-    # Create checks in Grafana
-    job_labels = create_checks_in_grafana(checks_data, tenant_id)
-    
-    print("Creating Statuspage components and metrics...")
-    # Use retrieved job labels to create Statuspage components and metrics
-    created_items = create_statuspage_items(job_labels, statuspage_headers, statuspage_base_url)
-    
-    print("Writing to checks_config.json...")
-    # Write to checks_config.json
-    output_checks = [
-        {
-            "name": item[0],
-            "job_label": item[0],
-            "statuspage_metric_id": item[2],
-            "statuspage_component_id": item[1]
-        } for item in created_items if item[1] is not None and item[2] is not None
-    ]
+        print("Creating checks in Grafana...")
+        job_labels = create_checks_in_grafana(checks_data, tenant_id)
+        
+        print("Creating Statuspage components and metrics...")
+        created_items = create_statuspage_items(job_labels, statuspage_headers, statuspage_base_url)
+        
+        print("Writing to checks_config.json...")
+        output_checks = [
+            {
+                "name": item[0],
+                "job_label": item[0],
+                "statuspage_metric_id": item[2],
+                "statuspage_component_id": item[1]
+            } for item in created_items if item[1] is not None and item[2] is not None
+        ]
 
-    output = {"checks": output_checks}
-    checks_config_path = 'checks_config.json'
-    with open('checks_config.json', 'w') as f:
-        json.dump(output, f, indent=4)
-        print(f"Updated checks configuration written to {checks_config_path}.")
+        output = {"checks": output_checks}
+        checks_config_path = 'checks_config.json'
+        with open(checks_config_path, 'w') as f:
+            json.dump(output, f, indent=4)
+            print(f"Updated checks configuration written to {checks_config_path}.")
 
-# Commit and Push Changes to the Remote Repository
-if git_has_changes():
-    commit_message = "Update checks configuration"
-    user_name = "bertrandmbanwi" # Replace with your name
-    user_email = "bertrandmbanwi@gmail.com" # Replace with your email
-    branch_name = "main" # The branch you want to push to
-    
-    git_pull(branch_name)
-    git_push(checks_config_path, commit_message, branch_name, user_name, user_email)
-else:
-    print("No changes detected.")
+        if git_has_changes():
+            commit_message = "Update checks configuration"
+            user_name = "bertrandmbanwi"  # Replace with your actual name
+            user_email = "bertrandmbanwi@gmail.com"  # Replace with your actual email
+            branch_name = "main"  # The branch you want to push to
+            
+            git_pull(branch_name)
+            git_push(checks_config_path, commit_message, branch_name, user_name, user_email)
+        else:
+            print("No changes detected.")
+    except Exception as e:
+        print(f"An error occurred in the main execution: {e}")
+        exit(1)
 
 if __name__ == "__main__":
     main()
