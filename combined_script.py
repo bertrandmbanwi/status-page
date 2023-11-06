@@ -216,7 +216,7 @@ def git_push(file_path, commit_message, branch_name, user_name, user_email):
         subprocess.check_call(['git', 'config', 'user.name', user_name])
 
         # Retrieve the personal access token from the environment variable
-        personal_access_token = os.getenv('MY_GITHUB_PERSONAL_ACCESS_TOKEN')
+        personal_access_token = "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"
         if not personal_access_token:
             raise ValueError("The personal access token is not set in the environment variables.")
 
