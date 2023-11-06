@@ -2,7 +2,7 @@ import requests
 import os
 import json
 import subprocess
-import logging
+# import logging
 
 try:
     SYNTHETIC_MONITORING_ACCESS = os.environ['SYNTHETIC_MONITORING_ACCESS']
@@ -215,6 +215,15 @@ def git_push(file_path, commit_message, branch_name, user_name, user_email):
         subprocess.check_call(['git', 'config', 'user.email', user_email])
         subprocess.check_call(['git', 'config', 'user.name', user_name])
 
+        # Retrieve the personal access token from the environment variable
+        personal_access_token = os.getenv('MY_GITHUB_PERSONAL_ACCESS_TOKEN')
+        if not personal_access_token:
+            raise ValueError("The personal access token is not set in the environment variables.")
+
+        # Set the Git remote URL using the personal access token
+        git_url = f'https://{personal_access_token}@github.com/bertrandmbanwi/status-page-2.git'
+        subprocess.check_call(['git', 'remote', 'set-url', 'origin', git_url])
+
         # Add and commit changes
         subprocess.check_call(['git', 'add', file_path])
         subprocess.check_call(['git', 'commit', '-m', commit_message])
@@ -271,7 +280,7 @@ def main():
             user_email = "bertrandmbanwi@gmail.com"  # Replace with your actual email
             branch_name = "main"  # The branch you want to push to
             
-            git_pull(branch_name)
+            # git_pull(branch_name)
             git_push(checks_config_path, commit_message, branch_name, user_name, user_email)
         else:
             print("No changes detected.")
