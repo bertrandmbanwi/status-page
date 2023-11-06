@@ -2,8 +2,8 @@ name: Grafana Checks and Create Components and Metrics
 
 on:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
   workflow_dispatch: # This trigger allows manual runs from the GitHub UI
 
 jobs:
