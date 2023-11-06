@@ -13,9 +13,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: main # Checkout the main branch specifically
-          token: ${{ secrets.STATUSPAGEACCESS_TOKEN }} # PAT with necessary permissions
+        # with:
+        #   ref: main # Checkout the main branch specifically
+        #   token: ${{ secrets.STATUSPAGEACCESS_TOKEN }} # PAT with necessary permissions
 
       - name: Clean workspace
         run: git clean -ffdx && git reset --hard
