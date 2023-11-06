@@ -12,7 +12,7 @@ page_id = 'pwpz1wk1fs7z'
 api_base = 'https://api.statuspage.io'
 
 # Grafana configuration
-PROMETHEUS_URL = 'https://prometheus-us-central2.grafana.net/api/prom/api/v1/query'
+PROMETHEUS_URL = 'https://prometheus-prod-13-prod-us-east-0.grafana.net/api/prom/api/v1/query'
 
 # Load checks from configuration file
 with open('checks_config.json', 'r') as f:
@@ -23,7 +23,7 @@ def fetch_grafana_metrics(job_label):
     params = {
         'query': f'avg_over_time(probe_success{{job="{job_label}"}}[1m])'
     }
-    auth = ("1229478", GRAFANA_API_KEY)
+    auth = ("1269157", GRAFANA_API_KEY)
     response = requests.get(PROMETHEUS_URL, params=params, auth=auth)
     data = response.json()
     reachability = float(data['data']['result'][0]['value'][1]) * 100  # converted to percentage

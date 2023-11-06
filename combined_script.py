@@ -8,14 +8,14 @@ try:
     SYNTHETIC_MONITORING_ACCESS = os.environ['SYNTHETIC_MONITORING_ACCESS']
     SUBSCRIPTION_KEY = os.environ['SUBSCRIPTION_KEY']
     STATUS_PAGE_2_API_KEY = os.environ['STATUS_PAGE_2_API_KEY']
-    STACK_ID = 760814
-    METRICS_INSTANCE_ID = 1229478
-    LOGS_INSTANCE_ID = 713814
+    STACK_ID = 780628
+    METRICS_INSTANCE_ID = 1269157
+    LOGS_INSTANCE_ID = 733624
 except KeyError as e:
     print(f"Environment variable {e} not found.")
     exit(1)
 
-GRAFANA_URL = 'https://synthetic-monitoring-api-us-central2.grafana.net'
+GRAFANA_URL = 'https://synthetic-monitoring-api-us-east-0.grafana.net'
 TOKEN_ENDPOINT = '/api/v1/register/install'
 grafana_headers = {
     'Authorization': f'Bearer {SYNTHETIC_MONITORING_ACCESS}',
