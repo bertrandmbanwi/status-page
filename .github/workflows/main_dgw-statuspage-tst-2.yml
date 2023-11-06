@@ -5,14 +5,14 @@
 name: Build and deploy Python project to Azure Function App - dgw-statuspage-tst-2
 
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
-  PYTHON_VERSION: '3.8' # set this to the python version to use (supports 3.6, 3.7, 3.8)
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: "." # set this to the path to your web app project, defaults to the repository root
+  PYTHON_VERSION: "3.8" # set this to the python version to use (supports 3.6, 3.7, 3.8)
 
 jobs:
   build:
@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python version
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -37,21 +37,20 @@ jobs:
       # Optional: Add step to run tests here
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: zip -r release.zip ./* -x "venv/*"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
           name: python-app
-          path: |
-            release.zip
-            !venv/
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: 'Production'
+      name: "Production"
+      # Ensure that the 'deploy-to-function' step correctly sets the 'webapp-url' output.
       url: ${{ steps.deploy-to-function.outputs.webapp-url }}
 
     steps:
@@ -63,13 +62,14 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: 'Deploy to Azure Functions'
+      - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         id: deploy-to-function
         with:
-          app-name: 'dgw-statuspage-tst-2'
-          slot-name: 'Production'
+          app-name: "dgw-statuspage-tst-2"
+          slot-name: "Production"
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          # Ensure that the secret name matches the secret stored in the repository settings.
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F0DE1EDD39DB451791F7ED0ABE80607B }}
           scm-do-build-during-deployment: true
           enable-oryx-build: true
