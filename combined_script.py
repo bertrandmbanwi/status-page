@@ -194,46 +194,46 @@ def create_statuspage_items(job_labels, headers, base_url):
 
 # ====================== GIT FUNCTIONS ======================
 
-def git_has_changes():
-    status = subprocess.check_output(['git', 'status', '--porcelain'])
-    return len(status) > 0
+# def git_has_changes():
+#     status = subprocess.check_output(['git', 'status', '--porcelain'])
+#     return len(status) > 0
 
-def git_pull(branch_name):
-    try:
-        subprocess.check_call(['git', 'checkout', branch_name])
-        subprocess.check_call(['git', 'stash'])  # Stash any local changes
-        subprocess.check_call(['git', 'pull', '--rebase', 'origin', branch_name])
-        subprocess.check_call(['git', 'stash', 'pop'])  # Apply stashed changes
-        print("Pulled the latest changes from the remote repository and reapplied local changes.")
-    except subprocess.CalledProcessError as e:
-        print(f"An error occurred while pulling changes: {e}")
-        exit(1)
+# def git_pull(branch_name):
+#     try:
+#         subprocess.check_call(['git', 'checkout', branch_name])
+#         subprocess.check_call(['git', 'stash'])  # Stash any local changes
+#         subprocess.check_call(['git', 'pull', '--rebase', 'origin', branch_name])
+#         subprocess.check_call(['git', 'stash', 'pop'])  # Apply stashed changes
+#         print("Pulled the latest changes from the remote repository and reapplied local changes.")
+#     except subprocess.CalledProcessError as e:
+#         print(f"An error occurred while pulling changes: {e}")
+#         exit(1)
 
-def git_push(file_path, commit_message, branch_name, user_name, user_email):
-    try:
-        # Set Git user identity
-        subprocess.check_call(['git', 'config', 'user.email', user_email])
-        subprocess.check_call(['git', 'config', 'user.name', user_name])
+# def git_push(file_path, commit_message, branch_name, user_name, user_email):
+#     try:
+#         # Set Git user identity
+#         subprocess.check_call(['git', 'config', 'user.email', user_email])
+#         subprocess.check_call(['git', 'config', 'user.name', user_name])
 
-        # Retrieve the personal access token from the environment variable
-        personal_access_token = "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"
-        if not personal_access_token:
-            raise ValueError("The personal access token is not set in the environment variables.")
+#         # Retrieve the personal access token from the environment variable
+#         personal_access_token = "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"
+#         if not personal_access_token:
+#             raise ValueError("The personal access token is not set in the environment variables.")
 
-        # Set the Git remote URL using the personal access token
-        git_url = f'https://bertrandmbanwi:{personal_access_token}@github.com/bertrandmbanwi/status-page-2.git'
-        subprocess.check_call(['git', 'remote', 'set-url', 'origin', git_url])
+#         # Set the Git remote URL using the personal access token
+#         git_url = f'https://bertrandmbanwi:{personal_access_token}@github.com/bertrandmbanwi/status-page-2.git'
+#         subprocess.check_call(['git', 'remote', 'set-url', 'origin', git_url])
 
-        # Add and commit changes
-        subprocess.check_call(['git', 'add', file_path])
-        subprocess.check_call(['git', 'commit', '-m', commit_message])
+#         # Add and commit changes
+#         subprocess.check_call(['git', 'add', file_path])
+#         subprocess.check_call(['git', 'commit', '-m', commit_message])
 
-        # Push changes to remote repository
-        subprocess.check_call(['git', 'push', 'origin', branch_name])
-        print(f"Pushed commit to remote branch {branch_name}.")
-    except subprocess.CalledProcessError as e:
-        print(f"An error occurred while pushing changes: {e}")
-        exit(1)
+#         # Push changes to remote repository
+#         subprocess.check_call(['git', 'push', 'origin', branch_name])
+#         print(f"Pushed commit to remote branch {branch_name}.")
+#     except subprocess.CalledProcessError as e:
+#         print(f"An error occurred while pushing changes: {e}")
+#         exit(1)
 
 
 # ====================== MAIN EXECUTION ======================
@@ -269,21 +269,41 @@ def main():
         ]
 
         output = {"checks": output_checks}
-        checks_config_path = 'checks_config.json'
-        with open(checks_config_path, 'w') as f:
-            json.dump(output, f, indent=4)
-            print(f"Updated checks configuration written to {checks_config_path}.")
-
-        if git_has_changes():
-            commit_message = "Update checks configuration"
-            user_name = "bertrandmbanwi"  # Replace with your actual name
-            user_email = "bertrandmbanwi@gmail.com"  # Replace with your actual email
-            branch_name = "main"  # The branch you want to push to
-            
-            # git_pull(branch_name)
-            git_push(checks_config_path, commit_message, branch_name, user_name, user_email)
+        checks_config_content = json.dumps(output, indent=4)
+        
+        # GitHub API setup
+        personal_access_token = os.getenv('ACCESS_TOKEN')
+        if not personal_access_token:
+            raise ValueError("The personal access token is not set in the environment variables.")
+        url = "https://api.github.com/repos/bertrandmbanwi/status-page-2/contents/checks_config.json"
+        headers = {
+            "Authorization": f"token {personal_access_token}",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        # Assuming you have your file content in a variable `content`
+        encoded_content = base64.b64encode(content.encode('utf-8')).decode('utf-8')
+        # Retrieve the file SHA from GitHub to update it
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            sha = response.json()['sha']
         else:
-            print("No changes detected.")
+            raise Exception(f"Failed to retrieve file SHA: {response.content}")
+
+        # Prepare the payload with the new content
+        data = {
+            "message": "Update checks configuration",
+            "content": encoded_content,
+            "sha": sha,
+            "branch": "main",
+        }
+
+        # Send the request to update the file on GitHub
+        response = requests.put(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            print("File updated successfully on GitHub!")
+        else:
+            print(f"Failed to update file on GitHub: {response.content}")
+
     except Exception as e:
         print(f"An error occurred in the main execution: {e}")
         exit(1)
