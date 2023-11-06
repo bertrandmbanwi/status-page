@@ -6,3 +6,6 @@ __queuestorage__
 local.settings.json
 test
 .venv
+combined_script.py
+monitor_all.py
+.github
