@@ -269,7 +269,7 @@ if git_has_changes():
     commit_message = "Update checks configuration"
     user_name = "bertrandmbanwi" # Replace with your name
     user_email = "bertrandmbanwi@gmail.com" # Replace with your email
-    branch_name = "Develop" # The branch you want to push to
+    branch_name = "main" # The branch you want to push to
     
     git_pull(branch_name)
     git_push(checks_config_path, commit_message, branch_name, user_name, user_email)
