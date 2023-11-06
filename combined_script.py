@@ -221,7 +221,7 @@ def git_push(file_path, commit_message, branch_name, user_name, user_email):
             raise ValueError("The personal access token is not set in the environment variables.")
 
         # Set the Git remote URL using the personal access token
-        git_url = f'https://{personal_access_token}@github.com/bertrandmbanwi/status-page-2.git'
+        git_url = f'https://bertrandmbanwi:{personal_access_token}@github.com/bertrandmbanwi/status-page-2.git'
         subprocess.check_call(['git', 'remote', 'set-url', 'origin', git_url])
 
         # Add and commit changes
