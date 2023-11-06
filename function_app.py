@@ -5,16 +5,18 @@ import requests
 import time
 import json
 
-# Timer trigger function which runs every 2 minutes
-def main(myTimer: func.TimerRequest) -> None:
+app = func.FunctionApp()
+
+@app.schedule(schedule="0 */2 * * * *", arg_name="myTimer", run_on_startup=True, use_monitor=False) 
+def status_page_timer(myTimer: func.TimerRequest) -> None:
     if myTimer.past_due:
         logging.info('The timer is past due!')
 
     logging.info('Python timer trigger function executed.')
 
     # Retrieve environment variables
-    api_key = os.environ.get('STATUS_PAGE_2_API_KEY')
-    GRAFANA_API_KEY = os.environ.get('GRAFANA_API_KEY')
+    api_key = os.environ['STATUS_PAGE_2_API_KEY']
+    GRAFANA_API_KEY = os.environ['GRAFANA_API_KEY']
 
     # Statuspage configuration
     page_id = 'pwpz1wk1fs7z'
