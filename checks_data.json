@@ -1,0 +1,10 @@
+[
+    {
+        "url": "https://digital-marketplace-demo-app.azure-api.net/foodinfec-1/foodinfec-1?state=CA",
+        "job": "Food Infection API - CA"
+    },
+    {
+        "url": "https://digital-marketplace-demo-app.azure-api.net/tusd/upload",
+        "job": "Tusd API"
+    }
+]

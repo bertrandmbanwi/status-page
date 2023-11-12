@@ -1,9 +1,11 @@
 name: Grafana Checks and Create Components and Metrics
 
 on:
-  # push:
-    # branches:
-    #   - main
+  push:
+    branches:
+      - main
+    paths:
+      - 'checks_data.json'
   workflow_dispatch: # This trigger allows manual runs from the GitHub UI
 
 jobs:
@@ -15,8 +17,7 @@ jobs:
         uses: actions/checkout@v2
         # with:
         #   ref: main # Checkout the main branch specifically
-        #   token: ${{ secrets.STATUSPAGEACCESS_TOKEN }} # PAT with necessary permissions
-
+        #   token: ${{ secrets.STATUSPAGEACCESS_TOKEN }} 
       - name: Clean workspace
         run: git clean -ffdx && git reset --hard
 

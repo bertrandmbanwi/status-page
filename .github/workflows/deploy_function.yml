@@ -5,6 +5,9 @@ name: Deploy Python project to Azure Function App
 on:
   push:
     branches: ["main"]
+    paths:
+      - 'checks_config.json'
+  workflow_dispatch:
 
 env:
   AZURE_FUNCTIONAPP_NAME: 'test-dgw-status'   # set this to your function app name on Azure

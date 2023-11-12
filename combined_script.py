@@ -229,18 +229,14 @@ def git_push(file_path, commit_message, branch_name, user_name, user_email):
 
 # ====================== MAIN EXECUTION ======================
 
+def read_checks_data(file_path):
+    with open(file_path, 'r') as file:
+        return json.load(file)
+    
 def main():
-    checks_data = [
-        {
-            'url': 'https://digital-marketplace-demo-app.azure-api.net/foodinfec-1/foodinfec-1?state=CA',
-            'job': 'Food Infection API - CA',
-        },
-        {
-            'url': 'https://digital-marketplace-demo-app.azure-api.net/tusd/upload',
-            'job': 'Tusd API',
-        }
-            # ... (Any additional checks_data items you might have)
-    ]
+    checks_data_file_path = 'checks_data.json'  # Path to the checks data file
+    checks_data = read_checks_data(checks_data_file_path)
+    
     
     print("Creating checks in Grafana...")
     job_labels = create_checks_in_grafana(checks_data, tenant_id)
