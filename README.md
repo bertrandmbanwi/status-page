@@ -330,4 +330,4 @@ The `statuspage.yml` workflow runs on the same 5-minute cron as the monitor. It 
 - **60-day inactivity timeout**: GitHub disables scheduled workflows after 60 days of no repo activity. Keep the repo active or re-enable manually.
 - **Public repos recommended**: GitHub Actions is free and unlimited for public repos. Private repos get 2,000 minutes/month (a 5-min cron burns ~4,300 min/month).
 - **Grafana Cloud free tier limits**: 10k active series, 100k synthetic monitoring executions/month. 
-- **Statuspage API rate limit**: 60 requests per minute. Each sync run uses ~5–6 calls, well within limits.
+- **Statuspage API rate limit**: 60 requests per minute. Each sync run uses ~5–6 calls, well within limits
